@@ -93,3 +93,30 @@ function addElements(){
 }
 
 addElements();
+
+// Save the cart in the localStorage
+function saveCart(cart){
+    return localStorage.setItem("products", JSON.stringify(cart));
+}
+
+// Change the quantity of the product in the basket
+function changeProductQuantity(){
+    const changeQuantitys = document.querySelectorAll(".itemQuantity");
+    console.log(changeQuantitys);
+    changeQuantitys.forEach(changeQuantity => 
+        changeQuantity.addEventListener("change", (e) => {
+            const searchProduct = e.target.closest("article");
+            const quantityProduct = e.target.closest(".itemQuantity");
+            let cart = getCart();
+            if (quantityProduct.value <= 0){
+                quantityProduct.value = 1;
+                saveCart(cart);
+            }else{
+                let findProduct = cart.find(product => product.productId == searchProduct.dataset.id && product.productColor == searchProduct.dataset.color);
+                let newQuantity = changeQuantity.value;
+                findProduct.productQuantity = newQuantity;
+                console.log(findProduct);
+                saveCart(cart);
+            }
+    }));
+}
