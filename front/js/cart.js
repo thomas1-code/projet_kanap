@@ -251,3 +251,43 @@ function storeOrderData(){
     }
     return order
 }
+
+// Sending the order after checking the data entered by the user
+function sendOrderData(){
+    const input = document.querySelector(".cart__order__form");
+    input.order.addEventListener("click", (e) =>{ 
+        e.preventDefault();
+        let orderData = storeOrderData();
+        if (getCart() === null || getCart() == 0 ){
+            console.log("rien dans le panier");
+        
+        }else if (validateFirstName(input.firstName) && validateLastName(input.lastName) && validateAddress(input.address) && validateCity(input.city) && validateEmail(input.email)){
+            console.log("formulaire valide");
+            fetch("http://localhost:3000/api/products/order", {     
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json"
+                },
+                body: JSON.stringify(orderData),  
+            })
+            .then((res) =>{
+                return res.json();
+                })
+            .then((data) =>{
+                localStorage.clear();
+                document.location.href = `./confirmation.html?orderId=${data.orderId}`;
+                console.log(data);
+                // localStorage.clear();
+            })
+            .catch(err => console.log(err))
+            // input.order.submit();
+        }else{
+            e.preventDefault();
+            alert("Veuillez compléter le formulaire");
+            console.log("le formulaire");
+        }
+    })
+}
+
+sendOrderData();
