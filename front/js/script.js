@@ -1,16 +1,11 @@
 // Send a request using the api fecth to retrieve product information
 function requestFetch(){
-    const urlApi = "http://localhost:3000/api/products/";
-    fetch(urlApi)
-      .then(function(res){
-        if (res.ok){
-          return res.json();
-        }
-      })
-      .then(function(data){
+    fetch("http://localhost:3000/api/products/")
+      .then(res => res.json())
+      .then(data =>{
         creationOfElements(data);
       })
-      .catch(function(err){
+      .catch(err =>{
         console.log(err);
         document.getElementById("items").innerText = "Désolé, une erreur vient de survenir. Nous traitons le problème.";
       })
