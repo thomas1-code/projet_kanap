@@ -1,3 +1,4 @@
+// Global function to call all functions
 function main (){
     requestIdFetch();
     addCart();
@@ -12,19 +13,12 @@ function main (){
   
   // Send a request using the fecth api to retrieve information from a product
   function requestIdFetch(){
-    const urlApiId = `http://localhost:3000/api/products/${getProductId()}`;
-    fetch(urlApiId)
-      .then(function(res){
-        if (res.ok){
-          return res.json();
-        }
-      })
-      .then(function(data){
+    fetch(`http://localhost:3000/api/products/${getProductId()}`)
+      .then(res => res.json())
+      .then(data =>{
         creationOfElements(data);
       })
-      .catch(function(err){
-        console.log(err);
-      })
+      .catch(err => console.log(err))
     }
   
   /**
