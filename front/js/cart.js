@@ -114,3 +114,11 @@ function changeProductQuantity(e){
     reloadPage();
 }
 
+// Removal of products from the basket
+function removeProduct(e){
+    const searchProduct = e.target.closest("article");
+    let cart = getCart();
+    cart = cart.filter(product => product.productId !== searchProduct.dataset.id || product.productColor !== searchProduct.dataset.color);
+    saveCart(cart);
+    reloadPage();
+}
