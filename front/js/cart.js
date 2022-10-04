@@ -1,27 +1,38 @@
+// Global function to call all functions
+function main(){
+    addItemsToCart();
+    checkForm(); 
+    sendOrderData();
+}
+
+main();
+
 // Recovery of the basket contained in local storage
 function getCart(){
     return JSON.parse(localStorage.getItem("products"));
 }
 
-// Adding user selected items to cart
+// Adding user-selected items to cart
 function addItemsToCart(){
+    let quantityTotal = 0;
+    let totalPrice = 0;
     if (getCart() === null || getCart() == 0){
         document.querySelector("#cartAndFormContainer > h1").insertAdjacentText("beforeend", " est vide");
     }else{
         for (let i = 0; i < getCart().length; i++){
             fetch("http://localhost:3000/api/products/" + getCart()[i].productId)
                 .then(res => res.json())
-                .then(api =>{
+                .then(data =>{
                     const elementsCart = `
                     <article class="cart__item" data-id="${getCart()[i].productId}" data-color="${getCart()[i].productColor}">
                         <div class="cart__item__img">
-                            <img src="${api.imageUrl}" alt="${api.altTxt}">
+                            <img src="${data.imageUrl}" alt="${data.altTxt}">
                         </div>
                         <div class="cart__item__content">
                             <div class="cart__item__content__description">
-                            <h2>${api.name}</h2>
+                            <h2>${data.name}</h2>
                             <p>${getCart()[i].productColor}</p>
-                            <p>${api.price} €</p>
+                            <p>${data.price} €</p>
                             </div>
                             <div class="cart__item__content__settings">
                             <div class="cart__item__content__settings__quantity">
@@ -35,69 +46,41 @@ function addItemsToCart(){
                         </div>
                     </article>`;
                     document.querySelector("#cart__items").insertAdjacentHTML("beforeend", elementsCart);
-                    const changeQuantity = document.querySelectorAll(".itemQuantity");
-                    for (let change of changeQuantity) {
-                        change.addEventListener("change", (e) =>{
-                            changeProductQuantity(e);
-                        })
-                    }
-                    const removeBtn = document.querySelectorAll(".deleteItem");
-                    for (let remove of removeBtn){
-                        remove.addEventListener("click", (e) =>{
-                            removeProduct(e);
-                        })
-                    }
+                    quantityTotal += getCart()[i].productQuantity * 1;
+                    document.querySelector("#totalQuantity").innerHTML = quantityTotal;
+                    totalPrice += getCart()[i].productQuantity * data.price;
+                    document.querySelector("#totalPrice").innerHTML = totalPrice;
+                    document.querySelectorAll(".itemQuantity").forEach(e =>{
+                        e.addEventListener("change", changeQuantityProduct);
+                    })
+                    document.querySelectorAll(".deletItem").forEach(e =>{
+                        e.addEventListener("click", removeProduct);
+                    })
                 })
                 .catch(err => console.log(err))
         }
     }
 }
 
-addItemsToCart();
-
-// Calculation of total quantity
-function addTotalQuantity(){
-    let quantityTotal = 0;
-    if (getCart() != null){
-        for (let i = 0 ; i < getCart().length; i++){
-            quantityTotal += getCart()[i].productQuantity * 1;
-        }
-        document.querySelector("#totalQuantity").innerHTML = quantityTotal;
-    }
-}
-
-addTotalQuantity();
-
-// Calculation of the total price
-function addTotalPrice(){
-    let totalPrice = 0;
-    if (getCart() != null){
-        for (let i = 0; i < getCart().length; i++){
-            fetch("http://localhost:3000/api/products/" + getCart()[i].productId)
-                .then(res => res.json())
-                .then(data =>{
-                totalPrice += getCart()[i].productQuantity * data.price;
-                document.querySelector("#totalPrice").innerHTML = totalPrice;
-                })
-                .catch(err => console.log(err))
-        }
-    }
-}
-
-addTotalPrice();
-
-// Save the cart in the localStorage
+/**
+ * Save the cart in the localStorage
+ * @param { Array.<Object> } cart 
+ * @returns { String }
+ */
 function saveCart(cart){
     return localStorage.setItem("products", JSON.stringify(cart));
 }
 
-// Reloading the resource from the current URL
+// Reloading the page from the current URL
 function reloadPage(){
     return window.location.reload()
 }
 
-// Change the quantity of the product in the basket
-function changeProductQuantity(e){
+/**
+ * Change the quantity of the product in the basket
+ * @param { Object } e 
+ */
+function changeQuantityProduct(e){
     const searchProduct = e.target.closest("article");
     const quantityProduct = e.target.closest(".itemQuantity");
     let cart = getCart();
@@ -108,13 +91,15 @@ function changeProductQuantity(e){
         let findProduct = cart.find(product => product.productId == searchProduct.dataset.id && product.productColor == searchProduct.dataset.color);
         let newQuantity = quantityProduct.value;
         findProduct.productQuantity = newQuantity;
-        console.log(findProduct);
     }
     saveCart(cart);
     reloadPage();
 }
 
-// Removal of products from the basket
+/**
+ * Removal of products from the basket
+ * @param { Object } e 
+ */
 function removeProduct(e){
     const searchProduct = e.target.closest("article");
     let cart = getCart();
@@ -124,113 +109,120 @@ function removeProduct(e){
 }
 
 // Checking the information entered in the form
-function validationInput(){
-    const input = document.querySelector(".cart__order__form");
-    input.firstName.addEventListener("change", function (){
-        validateFirstName(this);
+function checkForm(){
+    const form = document.querySelector(".cart__order__form");
+    form.firstName.addEventListener("change", () =>{
+        validateFirstName();
     })
-    input.lastName.addEventListener("change", function (){
-        validateLastName(this);
+    form.lastName.addEventListener("change", () =>{
+        validateLastName();
     })
-    input.address.addEventListener("change", function (){
-        validateAddress(this);
+    form.address.addEventListener("change", () =>{
+        validateAddress();
     })
-    input.city.addEventListener("change", function (){
-        validateCity(this);
+    form.city.addEventListener("change", () =>{
+        validateCity();
     })
-    input.email.addEventListener("change", function (){
-        validateEmail(this);
+    form.email.addEventListener("change", () =>{
+        validateEmail();
     })
 }
 
-validationInput();
+/**
+ * Show error message for form field validation
+ * @param { HTMLElement } input 
+ * @param { String } message 
+ */
+ function showError(input, message){
+    const formField = input;
+    formField.innerText = message;
+}
 
 /**
- * Validation of the data entered for the first name
- * @param {(String)} inputFirstName 
- * @returns 
+ * Show success message for form field validation
+ * @param { HTMLElement } input 
  */
-function validateFirstName(inputFirstName){
+function showSuccess(input){
+    const formField = input;
+    formField.innerText = "";
+}
+/**
+ * Regex to check first and last name
+ * @param { HTMLElement } name 
+ * @returns { Function(HTMLElement) }
+ */
+function regexName(name){
+    const regex = /^[a-zA-Zé'è`çà¨^ù.\-]{2,25}$/;
+    return regex.test(name)
+}
+
+// Validation of the data entered for the first name
+function validateFirstName(){
     const errorMsgFirstName = document.querySelector("#firstNameErrorMsg");
-    const regexName = new RegExp("^[a-zA-Zé'è`çà¨^ù.\-]{2,25}$");
-    if (regexName.test(inputFirstName.value)){
-        errorMsgFirstName.innerText = "";
+    if (regexName(firstName.value.trim())){
+        showSuccess(errorMsgFirstName)
         return true
     }else{
-        errorMsgFirstName.innerText = "Veuillez entrer un prénom valide (ex : Jean ou jean-marie)";
+        showError(errorMsgFirstName, "Veuillez entrer un prénom valide (ex : Jean ou jean-marie)");
         return false
     }
 }
 
-/**
- * Validation of the data entered for the last name
- * @param { (String) } inputLastName 
- * @returns 
- */
-function validateLastName(inputLastName){
+// Validation of the data entered for the last name
+function validateLastName(){
     const errorMsgLastName = document.querySelector("#lastNameErrorMsg");
-    const regexName = new RegExp("^[a-zA-Zé'è`çà¨^ù.\-]{2,25}$");
-    if (regexName.test(inputLastName.value)){
-        errorMsgLastName.innerText = "";
+    if (regexName(lastName.value.trim())){
+        showSuccess(errorMsgLastName);
         return true 
     }else{
-        errorMsgLastName.innerText = "Veuillez entrer un nom valide (ex : D'arc ou dupont)";
+        showError(errorMsgLastName, "Veuillez entrer un nom valide (ex : D'arc ou dupont)");
         return false
     }
 }
 
-/**
- * Validation of the data entered for the address
- * @param { ((String)) } inputAddress
- * @returns 
- */
-function validateAddress(inputAddress){
+// Validation of the data entered for the address
+function validateAddress(){
     const errorMsgAddress = document.querySelector("#addressErrorMsg");
-    const regexAddress = new RegExp("^[a-zA-Zé'è`çà¨^ù.,0-9., \-]{5,75}$");
-     if (regexAddress.test(inputAddress.value)){
-        errorMsgAddress.innerText = "";
+    const regexAddress = /^[a-zA-Zé'è`çà¨^ù.,0-9., \-]{5,75}$/;
+     if (regexAddress.test(address.value.trim())){
+        showSuccess(errorMsgAddress);
         return true
     }else{
-        errorMsgAddress.innerText = "Veuillez entrer une adresse valide (ex : 15 bd de la République)";
+        showError(errorMsgAddress, "Veuillez entrer une adresse valide (ex : 15 bd de la République)");
         return false        
     }
 }
 
-/**
- * Validation of the data entered for the city
- * @param { (String | Integer) } inputCity 
- * @returns 
- */
-function validateCity(inputCity){
+// Validation of the data entered for the city
+function validateCity(){
     const errorMsgCity = document.querySelector("#cityErrorMsg");
-    const regexCity = new RegExp("^[a-zA-Zé'è`çà¨^ù.\-]{3,30}$");
-    if (regexCity.test(inputCity.value)){
-        errorMsgCity.innerText = "";
+    const regexCity = /^[a-zA-Zé'è`çà¨^ù.\-]{3,30}$/;
+    if (regexCity.test(city.value.trim())){
+        showSuccess(errorMsgCity);
         return true
     }else{
-        errorMsgCity.innerText = "Veuillez entrer une ville valide (ex : Paris ou nantes)";
+        showError(errorMsgCity, "Veuillez entrer une ville valide (ex : Paris ou nantes)");
+        return false
+    }
+}
+
+// Validation of the data entered for the email
+function validateEmail(){
+    const errorMsgEmail = document.querySelector("#emailErrorMsg");
+    const regexEmail =  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (regexEmail.test(email.value.trim())){
+        showSuccess(errorMsgEmail);
+        return true 
+    }else{
+        showError(errorMsgEmail, "Veuillez entrer un email valide (ex : monemail@exemple.fr)");
         return false
     }
 }
 
 /**
- * Validation of the data entered for the email
- * @param { (String | Integer) } inputEmail 
- * @returns 
+ * Storage of information entered in the form
+ * @returns { Object.<Object> }
  */
-function validateEmail(inputEmail){
-    const errorMsgEmail = document.querySelector("#emailErrorMsg");
-    const regexEmail =  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (regexEmail.test(inputEmail.value)){
-        errorMsgEmail.innerText = "";
-        return true 
-    }else{
-        errorMsgEmail.innerText = "Veuillez entrer un email valide (ex : monemail@exemple.fr)";
-        return false
-    }
-}
-
-// Storage of information entered in the form
 function storeOrderData(){
     const productId = [];
     if (getCart() != null){
@@ -247,22 +239,19 @@ function storeOrderData(){
                 email: email.value
             },
             products: productId
-            
     }
     return order
 }
 
 // Sending the order after checking the data entered by the user
 function sendOrderData(){
-    const input = document.querySelector(".cart__order__form");
-    input.order.addEventListener("click", (e) =>{ 
+    const form = document.querySelector(".cart__order__form");
+    form.order.addEventListener("click", (e) =>{ 
         e.preventDefault();
-        let orderData = storeOrderData();
+        const orderData = storeOrderData();
         if (getCart() === null || getCart() == 0 ){
-            console.log("rien dans le panier");
-        
-        }else if (validateFirstName(input.firstName) && validateLastName(input.lastName) && validateAddress(input.address) && validateCity(input.city) && validateEmail(input.email)){
-            console.log("formulaire valide");
+            alert("Votre panier est vide.");
+        }else if (validateFirstName() && validateLastName() && validateAddress() && validateCity() && validateEmail()){
             fetch("http://localhost:3000/api/products/order", {     
                 method: "POST",
                 headers: {
@@ -277,17 +266,10 @@ function sendOrderData(){
             .then((data) =>{
                 localStorage.clear();
                 document.location.href = `./confirmation.html?orderId=${data.orderId}`;
-                console.log(data);
-                // localStorage.clear();
             })
             .catch(err => console.log(err))
-            // input.order.submit();
         }else{
-            e.preventDefault();
-            alert("Veuillez compléter le formulaire");
-            console.log("le formulaire");
+            alert("Le formulaire est incomplet ou invalide.");
         }
     })
 }
-
-sendOrderData();
