@@ -23,7 +23,7 @@ function main (){
   
   /**
    * Dynamic creation and integration of elements in the product.html page
-   * @param { (String | Array | Integer) } api 
+   * @param { Array.<Object> } api 
    */
   function creationOfElements(api){
     document.querySelector(".item__img").insertAdjacentHTML("beforeend", `
