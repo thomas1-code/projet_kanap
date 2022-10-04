@@ -15,7 +15,7 @@ function requestFetch(){
   
   /**
    * Dynamic creation of elements in the index.html page
-   * @param { (String | Array | Integer) } resultsApi 
+   * @param { Array.<Object> } resultsApi 
    */
   function creationOfElements(resultsApi){
     for (let result of resultsApi){
