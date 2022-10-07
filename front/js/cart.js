@@ -230,7 +230,7 @@ function validateEmail(){
 }
 
 /**
- * Storage of information entered in the form
+ * Storage of the information entered in the form and the id of the products contained in the basket
  * @returns { Object.<Object> }
  */
 function storeOrderData(){
