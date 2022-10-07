@@ -1,9 +1,9 @@
-// Send a request using the api fecth to retrieve product information
-function requestFetch(){
+// Insert products in the homepage
+function addProducts(){
     fetch("http://localhost:3000/api/products/")
       .then(res => res.json())
       .then(data =>{
-        creationOfElements(data);
+        createProducts(data);
       })
       .catch(err =>{
         console.log(err);
@@ -11,15 +11,15 @@ function requestFetch(){
       })
     }
     
-  requestFetch();
+  addProducts();
   
   /**
-   * Dynamic creation of elements in the index.html page
-   * @param { Array.<Object> } resultsApi 
+   * Dynamic creation of products in the homepage
+   * @param { Array.<Object> } api
    */
-  function creationOfElements(resultsApi){
-    for (let result of resultsApi){
-      const elementsCard = `
+  function createProducts(api){
+    for(let result of api){
+      const productCard = `
       <a href="./product.html?id=${result._id}">
         <article>
           <img src="${result.imageUrl}" alt="${result.altTxt}">
@@ -27,6 +27,6 @@ function requestFetch(){
           <p class="productDescription">${result.description}</p>
         </article>
       </a>`;
-      document.querySelector("#items").insertAdjacentHTML("beforeend", elementsCard);
+      document.querySelector("#items").insertAdjacentHTML("beforeend", productCard);
     }
   }
