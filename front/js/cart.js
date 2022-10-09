@@ -94,8 +94,8 @@ function changeProductQuantity(){
             }
             if (targetProductQuantity.value >= 1){
                 let findProduct = cart.find(product => product.productId == targetProduct.dataset.id && product.productColor == targetProduct.dataset.color);
-                let newProductQuantiy = targetProductQuantity.value;
-                findProduct.productQuantity = newProductQuantiy;
+                let newProductQuantity = targetProductQuantity.value;
+                findProduct.productQuantity = newProductQuantity;
             }
             saveCart(cart);
             reloadPage();
