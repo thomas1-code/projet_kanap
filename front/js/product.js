@@ -18,7 +18,10 @@ function main (){
       .then(data =>{
         createProducts(data);
       })
-      .catch(err => console.log(err))
+      .catch(err =>{
+        console.log(err);
+        document.querySelector("#title").insertAdjacentText("beforebegin", "Désolé, une erreur vient de survenir. Nous traitons le problème.");
+      })
     }
   
   /**
@@ -31,10 +34,11 @@ function main (){
     document.getElementById("title").insertAdjacentText("beforeend", `${api.name}`);
     document.getElementById("price").insertAdjacentText("beforeend", `${api.price}`);
     document.getElementById("description").insertAdjacentText("beforeend", `${api.description}`);
+    let colorOption = "";
     for (let color of api.colors){
-    document.querySelector("#colors").insertAdjacentHTML("beforeend", `
-    <option value="${color}">${color}</option>`);
+      colorOption += `<option value="${color}">${color}</option>`
     }
+    document.querySelector("#colors").insertAdjacentHTML("beforeend", colorOption);
   }
   
   // Adding the product or products to cart

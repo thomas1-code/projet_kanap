@@ -18,8 +18,9 @@ function addProducts(){
    * @param { Array.<Object> } api
    */
   function createProducts(api){
+    let productCard = "";
     for(let result of api){
-      const productCard = `
+      productCard += `
       <a href="./product.html?id=${result._id}">
         <article>
           <img src="${result.imageUrl}" alt="${result.altTxt}">
@@ -27,6 +28,6 @@ function addProducts(){
           <p class="productDescription">${result.description}</p>
         </article>
       </a>`;
-      document.querySelector("#items").insertAdjacentHTML("beforeend", productCard);
     }
+    document.querySelector("#items").insertAdjacentHTML("beforeend", productCard);
   }
